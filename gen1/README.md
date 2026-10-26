@@ -1,10 +1,10 @@
-# TBDFv1 Zig library
+# TBDF1 Zig library
 
-This package reads, validates, formats, and updates TBDFv1 disk images. The
-format is specified in [docs/TBDFv1.md](../docs/TBDFv1.md).
+This package reads, validates, formats, and updates TBDF1 disk images. The
+format is specified in [docs/TBDF1.md](../docs/TBDF1.md).
 
-The package also provides a C ABI. Include [`include/tbdfv1.h`](include/tbdfv1.h)
-and link the static `tbdfv1` library installed by `zig build install`.
+The package also provides a C ABI. Include [`include/tbdf1.h`](include/tbdf1.h)
+and link the static `tbdf1` library installed by `zig build install`.
 
 The library uses no allocator and retains no disk-sized metadata. **The caller
 provides a block device and a scratch slice of `block_size + 64` bytes.** The
@@ -19,7 +19,7 @@ The callbacks adapt the library to a simulator, a disk image, or a physical
 device. The library only asks for one block at a time.
 
 ```zig
-const tbdf = @import("tbdfv1");
+const tbdf = @import("tbdf1");
 const block_size = 1024;
 
 fn readBlock(context: ?*anyopaque, block: u32, output: []u8) anyerror!void {
@@ -103,7 +103,7 @@ try volume.delete(file.id);
 
 Each write and resize checks the complete requested change before its first
 write. If the device reports a write failure after mutation begins, the volume
-is invalidated because TBDFv1 has no transaction or recovery mechanism. Open
+is invalidated because TBDF1 has no transaction or recovery mechanism. Open
 and validate the image again before using it.
 
 ## Supported layouts
@@ -133,7 +133,7 @@ byte count through an output parameter. `tbdf_list_next` returns `TBDF_END`
 after the final entry.
 
 ```c
-#include "tbdfv1.h"
+#include "tbdf1.h"
 #include <stdlib.h>
 
 void *volume_storage = malloc(tbdf_volume_storage_size());

@@ -1,5 +1,5 @@
-#ifndef TBDFV1_H
-#define TBDFV1_H
+#ifndef TBDF1_H
+#define TBDF1_H
 
 #include <stddef.h>
 #include <stdint.h>
@@ -94,4 +94,4 @@ tbdf_status tbdf_delete(void *volume, uint16_t file_id);
 }
 #endif
 
-#endif /* TBDFV1_H */
+#endif /* TBDF1_H */

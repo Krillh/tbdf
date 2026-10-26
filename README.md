@@ -2,10 +2,10 @@
 
 TBDF is a family of data formats for block-based persistent storage. They serve
 as the official formats for [OpenWAC](https://github.com/Krillh/openwac). This
-repository will contain all versions of TBDF.
+repository will contain all generations of TBDF.
 
 For an archival format, see [TFAF](https://github.com/Krillh/tfaf).
 
-| Version | Docs, README | Description |
+| Generation | Docs, README | Description |
 | --- | --- | --- |
-| TBDFv1 | [docs](docs/TBDFv1.md), [README](v1/README.md) | TBDFv1 is meant to be simple to implement, yet extendable and support very small volumes. |
+| TBDF1 | [docs](docs/TBDF1.md), [README](gen1/README.md) | TBDF1 is TBDF generation 1, meant to be simple to implement, yet extendable and support very small volumes. |

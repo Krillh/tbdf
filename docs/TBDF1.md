@@ -1,6 +1,7 @@
-﻿# Tiny Basic Disk Format version 1
+# Tiny Basic Disk Format generation 1
 
-TBDFv1, OpenWAC's official and only supported disk format, provides minimal
+TBDF1 is TBDF generation 1. A future TBDF2 would be TBDF generation 2. TBDF1,
+OpenWAC's official and only supported disk format, provides minimal
 fixed-geometry block storage down to 256 bytes (eight 32-byte blocks with
 the required features).
 
@@ -472,9 +473,9 @@ Ideas only; implementation is not necessarily planned or expected:
 
 ## Safety
 
-TBDFv1 has few corruption, crash-safety or recovery measures. Writes are
+TBDF1 has few corruption, crash-safety or recovery measures. Writes are
 non-atomic; a crash during writing is very likely to corrupt data. Future
-versions may add protections. No rollback or recovery is guaranteed.
+generations may add protections. No rollback or recovery is guaranteed.
 
 A failed block write may have modified part of the block. A host/driver may
 retain the intended full-block bytes and retry those same bytes at the same

@@ -1,4 +1,4 @@
-//! Allocation-free, repeated-scan TBDFv1 validator.
+//! Allocation-free, repeated-scan TBDF1 validator.
 const std = @import("std");
 const wire = @import("wire.zig");
 const io = @import("block_io.zig");

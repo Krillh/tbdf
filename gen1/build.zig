@@ -11,7 +11,7 @@ pub fn build(b: *std.Build) void {
     });
 
     const zig_library = b.addLibrary(.{
-        .name = "tbdfv1_zig",
+        .name = "tbdf1_zig",
         .root_module = zig_module,
         .linkage = .static,
     });
@@ -23,15 +23,15 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
     const c_library = b.addLibrary(.{
-        .name = "tbdfv1",
+        .name = "tbdf1",
         .root_module = c_module,
         .linkage = .static,
     });
     b.installArtifact(c_library);
-    b.getInstallStep().dependOn(&b.addInstallHeaderFile(b.path("include/tbdfv1.h"), "tbdfv1.h").step);
+    b.getInstallStep().dependOn(&b.addInstallHeaderFile(b.path("include/tbdf1.h"), "tbdf1.h").step);
 
     const tests = b.addTest(.{ .root_module = c_module });
     const run_tests = b.addRunArtifact(tests);
-    const test_step = b.step("test", "Run TBDFv1 unit tests");
+    const test_step = b.step("test", "Run TBDF1 unit tests");
     test_step.dependOn(&run_tests.step);
 }

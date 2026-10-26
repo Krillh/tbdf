@@ -1,4 +1,4 @@
-//! A small, allocation-free reader and writer for TBDFv1 disk images.
+//! A small, allocation-free reader and writer for TBDF1 disk images.
 //!
 //! The volume borrows the caller's scratch buffer and block device. It is not
 //! reentrant: one operation at a time may use a given Volume.

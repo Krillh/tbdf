@@ -1,4 +1,4 @@
-//! C ABI adapter for the allocation-free TBDFv1 library.
+//! C ABI adapter for the allocation-free TBDF1 library.
 //!
 //! The C caller owns both the opaque volume storage and the scratch buffer.
 //! Storage must remain at least `tbdf_volume_storage_size()` bytes and suitably

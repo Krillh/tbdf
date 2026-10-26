@@ -1,5 +1,5 @@
 .{
-    .name = .tbdfv1,
+    .name = .tbdf1,
     .version = "0.1.0",
     .minimum_zig_version = "0.18.0-dev.253+16d31ceed",
     .dependencies = .{},
@@ -10,6 +10,5 @@
         "include",
         "tests",
         "README.md",
-        "docs/TBDFv1.md",
     },
 }

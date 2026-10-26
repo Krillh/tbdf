@@ -1,4 +1,4 @@
-//! TBDFv1 wire representations and checked little-endian codecs.
+//! TBDF1 wire representations and checked little-endian codecs.
 //!
 //! These routines only decode/encode fields. They do not validate cross-record
 //! invariants, table bounds, or whether a feature combination is supported.
