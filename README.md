@@ -12,7 +12,7 @@ For an archival format, see [TFAF](https://github.com/Krillh/tfaf).
 
 ## Release packages
 
-Build the WebAssembly libraries and a complete consumer package with:
+Build the WebAssembly LTO archive and its consumer package with:
 
 ```powershell
 .\build-release.ps1 -Generation gen1
@@ -22,7 +22,10 @@ Pass `-ReleaseVersion 0.1.0-rc.1` when preparing a versioned prerelease; the
 bundle metadata records both the semantic version and its generation-specific
 tag (`tbdf1/v0.1.0-rc.1`).
 
-The script places intermediates under `build/gen1/` and creates the package
-directory and ZIP under `release/`. Each format generation has an independent
-release sequence; add its configuration to `build-release.ps1` when a new
-generation is implemented.
+The package contains `lib/tbdf1-wasm.a` (an LLVM bitcode archive with LTO), the
+public C header, license, checksum, and build metadata. It contains no source or
+documentation; GitHub's tagged source archives provide the source. The script
+places intermediates under `build/gen1/` and creates the package directory and
+ZIP under `release/`. Each format generation has an independent release
+sequence; add its configuration to `build-release.ps1` when a new generation is
+implemented.

@@ -18,10 +18,8 @@ $generationConfig = @{
     format_name = 'TBDF1'
     generation_number = 1
     release_tag_prefix = 'tbdf1'
-    c_library = 'tbdf1'
+    lto_archive = 'tbdf1-wasm.a'
     header = 'tbdf1.h'
-    specification = 'docs/TBDF1.md'
-    package_readme = 'docs/driver-package.md'
   }
 }[$Generation]
 if ($null -eq $generationConfig) { throw "No build configuration for $Generation." }
@@ -30,7 +28,7 @@ $generationDir = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot $Generation))
 $buildDir = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot "build/$Generation"))
 $releaseRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot 'release'))
 $releaseName = "tbdf-$Generation-wasm"
-$installDir = Join-Path $buildDir 'install'
+$ltoBuildDir = Join-Path $buildDir 'lto'
 $cacheDir = Join-Path $buildDir 'zig-cache'
 $globalCacheDir = Join-Path $buildDir 'zig-global-cache'
 $packageDir = Join-Path $releaseRoot $releaseName
@@ -50,10 +48,10 @@ function Assert-ReleaseChild([string]$Path) {
 }
 
 New-Item -ItemType Directory -Force -Path `
-  $buildDir, $releaseRoot, $installDir, $cacheDir, $globalCacheDir | Out-Null
+  $buildDir, $releaseRoot, $ltoBuildDir, $cacheDir, $globalCacheDir | Out-Null
 
-# Use separate cache and install directories so this script does not overwrite
-# a developer's ordinary `zig build` output under gen1/zig-out.
+# Keep the release build isolated from the developer's ordinary `zig build`
+# output. The -flto archive stores LLVM bitcode in its archive member.
 Push-Location $generationDir
 $oldGlobalCacheDir = $env:ZIG_GLOBAL_CACHE_DIR
 $oldLocalCacheDir = $env:ZIG_LOCAL_CACHE_DIR
@@ -63,10 +61,17 @@ try {
   # processing ordinary build options.
   $env:ZIG_GLOBAL_CACHE_DIR = $globalCacheDir
   $env:ZIG_LOCAL_CACHE_DIR = $cacheDir
-  & $zig build --prefix $installDir `
-    '-Dtarget=wasm32-freestanding' `
-    '-Doptimize=ReleaseFast'
-  if ($LASTEXITCODE -ne 0) { throw "Zig build failed for $Generation." }
+  Push-Location $ltoBuildDir
+  try {
+    & $zig build-lib (Join-Path $generationDir 'src/c_api.zig') `
+      '-target' 'wasm32-freestanding' `
+      '-O' 'ReleaseFast' `
+      '-flto'
+    if ($LASTEXITCODE -ne 0) { throw "LTO archive build failed for $Generation." }
+  }
+  finally {
+    Pop-Location
+  }
 }
 finally {
   $env:ZIG_GLOBAL_CACHE_DIR = $oldGlobalCacheDir
@@ -74,49 +79,30 @@ finally {
   Pop-Location
 }
 
-$cArchiveName = "lib$($generationConfig.c_library).a"
-$cArchive = Join-Path $installDir "lib/$cArchiveName"
-$installedHeader = Join-Path $installDir "include/$($generationConfig.header)"
-foreach ($requiredPath in @($cArchive, $installedHeader)) {
+$compilerArchive = Join-Path $ltoBuildDir 'libc_api.a'
+$releaseArchive = Join-Path $ltoBuildDir $generationConfig.lto_archive
+$publicHeader = Join-Path $generationDir "include/$($generationConfig.header)"
+foreach ($requiredPath in @($compilerArchive, $publicHeader)) {
   if (-not (Test-Path -LiteralPath $requiredPath -PathType Leaf)) {
     throw "Zig build did not produce the required release file: $requiredPath"
   }
 }
+Copy-Item -LiteralPath $compilerArchive -Destination $releaseArchive -Force
 
 New-Item -ItemType Directory -Force -Path $stageDir | Out-Null
 New-Item -ItemType Directory -Force -Path `
   (Join-Path $stageDir 'include'), `
-  (Join-Path $stageDir 'lib'), `
-  (Join-Path $stageDir 'docs'), `
-  (Join-Path $stageDir 'zig') | Out-Null
+  (Join-Path $stageDir 'lib') | Out-Null
 
-Copy-Item -LiteralPath $cArchive -Destination (Join-Path $stageDir "lib/$cArchiveName")
-Copy-Item -LiteralPath $installedHeader `
+Copy-Item -LiteralPath $releaseArchive `
+  -Destination (Join-Path $stageDir "lib/$($generationConfig.lto_archive)")
+Copy-Item -LiteralPath $publicHeader `
   -Destination (Join-Path $stageDir "include/$($generationConfig.header)")
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'LICENSE') `
   -Destination (Join-Path $stageDir 'LICENSE')
-Copy-Item -LiteralPath (Join-Path $PSScriptRoot $generationConfig.specification) `
-  -Destination (Join-Path $stageDir "docs/$([IO.Path]::GetFileName($generationConfig.specification))")
-Copy-Item -LiteralPath (Join-Path $PSScriptRoot $generationConfig.package_readme) `
-  -Destination (Join-Path $stageDir 'README.md')
-
-# Include the Zig package source so consumers can use the typed Zig API as well
-# as the stable C ABI archive and header.
-Copy-Item -LiteralPath (Join-Path $generationDir 'build.zig') `
-  -Destination (Join-Path $stageDir 'zig/build.zig')
-Copy-Item -LiteralPath (Join-Path $generationDir 'build.zig.zon') `
-  -Destination (Join-Path $stageDir 'zig/build.zig.zon')
-Copy-Item -LiteralPath (Join-Path $generationDir 'README.md') `
-  -Destination (Join-Path $stageDir 'zig/README.md')
-Copy-Item -LiteralPath (Join-Path $generationDir 'src') `
-  -Destination (Join-Path $stageDir 'zig/src') -Recurse
-Copy-Item -LiteralPath (Join-Path $generationDir 'include') `
-  -Destination (Join-Path $stageDir 'zig/include') -Recurse
-Copy-Item -LiteralPath (Join-Path $generationDir 'tests') `
-  -Destination (Join-Path $stageDir 'zig/tests') -Recurse
 
 $archives = @(
-  @{ name = "lib/$cArchiveName"; source = (Join-Path $stageDir "lib/$cArchiveName") }
+  @{ name = "lib/$($generationConfig.lto_archive)"; source = (Join-Path $stageDir "lib/$($generationConfig.lto_archive)") }
 )
 $archiveMetadata = @()
 $checksumLines = @()
@@ -125,7 +111,7 @@ foreach ($archiveInfo in $archives) {
   $size = (Get-Item -LiteralPath $archiveInfo.source).Length
   $archiveMetadata += [ordered]@{
     path = $archiveInfo.name
-    type = 'Zig static library archive'
+    type = 'LLVM bitcode static library archive with LTO enabled'
     size_bytes = $size
     sha256 = $hash
   }
@@ -140,7 +126,7 @@ $metadata = [ordered]@{
   format_generation_number = $generationConfig.generation_number
   release_name = $releaseName
   target_triple = 'wasm32-freestanding'
-  optimization_mode = 'ReleaseFast'
+  optimization_mode = 'ReleaseFast with LTO'
   zig_version = $zigVersion
   archives = $archiveMetadata
   public_header = "include/$($generationConfig.header)"

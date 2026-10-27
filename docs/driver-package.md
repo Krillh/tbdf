@@ -5,20 +5,19 @@ TBDF2 driver would be generation 2 and would have its own release sequence.
 
 ## Package contents
 
-- `lib/libtbdf1.a` is the WebAssembly C ABI static library.
+- `lib/tbdf1-wasm.a` is the WebAssembly C ABI static library. Its archive
+  member is optimized LLVM bitcode and supports link-time optimization.
 - `include/tbdf1.h` declares the C ABI.
-- `zig/` contains the Zig package sources and build manifest for consumers who
-  want to import the typed Zig API directly.
-- `docs/TBDF1.md` specifies the on-disk format.
 - `LICENSE` contains the project license.
-- `SHA256SUMS.txt` contains the C ABI library's SHA-256 checksum.
+- `SHA256SUMS.txt` contains the archive's SHA-256 checksum.
 - `BUILD-METADATA.json` records the format generation, target, Zig version,
-  optimization mode, archive sizes, and checksums.
+  optimization mode, LTO status, archive size, and checksum.
 
 The archive targets `wasm32-freestanding`; it is a library, not a standalone
-WebAssembly program. C consumers link `libtbdf1.a` and include `tbdf1.h` using
-a compatible WebAssembly toolchain. Zig consumers can use the source package in
-`zig/` and configure their build for the target they need.
+WebAssembly program. C consumers include `tbdf1.h` and link
+`lib/tbdf1-wasm.a` with a compatible WebAssembly toolchain that supports LLVM
+bitcode and LTO. The release ZIP omits source and documentation; GitHub's
+tagged source archives provide the source.
 
 Build the release package from the repository root with:
 
