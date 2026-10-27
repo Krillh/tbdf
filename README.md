@@ -9,3 +9,16 @@ For an archival format, see [TFAF](https://github.com/Krillh/tfaf).
 | Generation | Docs, README | Description |
 | --- | --- | --- |
 | TBDF1 | [docs](docs/TBDF1.md), [README](gen1/README.md) | TBDF1 is TBDF generation 1, meant to be simple to implement, yet extendable and support very small volumes. |
+
+## Release packages
+
+Build the WebAssembly libraries and a complete consumer package with:
+
+```powershell
+.\build-release.ps1 -Generation gen1
+```
+
+The script places intermediates under `build/gen1/` and creates the package
+directory and ZIP under `release/`. Each format generation has an independent
+release sequence; add its configuration to `build-release.ps1` when a new
+generation is implemented.
