@@ -1,7 +1,9 @@
 param(
   [Parameter(Mandatory = $true)]
   [ValidateSet('gen1')]
-  [string]$Generation
+  [string]$Generation,
+  [ValidatePattern('^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$')]
+  [string]$ReleaseVersion
 )
 
 $ErrorActionPreference = 'Stop'
@@ -15,6 +17,7 @@ $generationConfig = @{
   gen1 = @{
     format_name = 'TBDF1'
     generation_number = 1
+    release_tag_prefix = 'tbdf1'
     c_library = 'tbdf1'
     header = 'tbdf1.h'
     specification = 'docs/TBDF1.md'
@@ -141,6 +144,10 @@ $metadata = [ordered]@{
   zig_version = $zigVersion
   archives = $archiveMetadata
   public_header = "include/$($generationConfig.header)"
+}
+if ($ReleaseVersion) {
+  $metadata.release_version = $ReleaseVersion
+  $metadata.release_tag = "$($generationConfig.release_tag_prefix)/v$ReleaseVersion"
 }
 $metadataJson = ConvertTo-Json -InputObject $metadata -Depth 5
 [IO.File]::WriteAllText(

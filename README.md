@@ -18,6 +18,10 @@ Build the WebAssembly libraries and a complete consumer package with:
 .\build-release.ps1 -Generation gen1
 ```
 
+Pass `-ReleaseVersion 0.1.0-rc.1` when preparing a versioned prerelease; the
+bundle metadata records both the semantic version and its generation-specific
+tag (`tbdf1/v0.1.0-rc.1`).
+
 The script places intermediates under `build/gen1/` and creates the package
 directory and ZIP under `release/`. Each format generation has an independent
 release sequence; add its configuration to `build-release.ps1` when a new
